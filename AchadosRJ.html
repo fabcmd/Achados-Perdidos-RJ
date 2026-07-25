@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AchadosRJ – Achados e Perdidos Urbanos</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2eb;
+    --bg2: #eae6dc;
+    --text: #1a1a1a;
+    --text2: #555;
+    --accent: #e05c2a;
+    --accent2: #2a7ae0;
+    --card: #ffffff;
+    --border: #d8d3c8;
+    --font-size-base: 16px;
+    --nav-bg: #1a1a1a;
+    --nav-text: #f5f2eb;
+    --toast-bg: #1a1a1a;
+    --toast-text: #f5f2eb;
+  }
+  body.dark-mode {
+    --bg: #111111;
+    --bg2: #1c1c1c;
+    --text: #f0ece0;
+    --text2: #aaa;
+    --card: #1e1e1e;
+    --border: #333;
+    --nav-bg: #000;
+    --nav-text: #f0ece0;
+    --toast-bg: #f0ece0;
+    --toast-text: #111;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { font-size: var(--font-size-base); scroll-behavior: smooth; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+  }
+
+  /* ACCESSIBILITY BAR */
+  #access-bar {
+    background: var(--nav-bg);
+    color: var(--nav-text);
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+  }
+  #access-bar span { margin-right: auto; opacity: 0.5; text-transform: uppercase; font-size: 0.7rem; }
+  #access-bar button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--nav-text);
+    border-radius: 4px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: all 0.2s;
+  }
+  #access-bar button:hover { background: rgba(255,255,255,0.15); }
+
+  /* NAVBAR */
+  nav {
+    background: var(--nav-bg);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    border-bottom: 3px solid var(--accent);
+  }
+  .nav-logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--nav-text);
+    text-decoration: none;
+    letter-spacing: -0.03em;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .nav-links a, .nav-links button.nav-btn {
+    color: var(--nav-text);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .nav-links a:hover, .nav-links button.nav-btn:hover { background: rgba(255,255,255,0.1); color: var(--nav-text); }
+  .nav-links .btn-accent {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .nav-links .btn-accent:hover { background: #c94f22; color: #fff; }
+  #user-display {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-left: 8px;
+  }
+  .dropdown { position: relative; }
+  .dropdown-menu-custom {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: #222;
+    border-radius: 8px;
+    min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    overflow: hidden;
+    z-index: 1000;
+  }
+  .dropdown:hover .dropdown-menu-custom { display: block; }
+  .dropdown-menu-custom a {
+    display: block;
+    padding: 10px 16px;
+    color: #f0ece0;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+  .dropdown-menu-custom a:hover { background: rgba(255,255,255,0.1); }
+  .hamburger { display: none; background: none; border: none; color: var(--nav-text); font-size: 1.4rem; cursor: pointer; }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 85vh; }
+  .screen.active { display: block; }
+
+  /* HERO */
+  #hero {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    padding: 80px 32px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0.08;
+  }
+  #hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -80px;
+    width: 400px; height: 400px;
+    background: var(--accent2);
+    border-radius: 50%;
+    opacity: 0.06;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    color: #f0ece0;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .hero-title span { color: var(--accent); }
+  .hero-sub {
+    color: #aaa;
+    font-size: 1.05rem;
+    max-width: 540px;
+    margin: 0 auto 36px;
+    line-height: 1.6;
+  }
+  .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary-custom {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-primary-custom:hover { background: #c94f22; transform: translateY(-2px); }
+  .btn-outline-custom {
+    background: transparent;
+    color: #f0ece0;
+    border: 2px solid rgba(255,255,255,0.25);
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-outline-custom:hover { border-color: #f0ece0; }
+
+  /* STATS BAR */
+  .stats-bar {
+    background: var(--accent);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; color: #fff; }
+  .stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 800; }
+  .stat-label { font-size: 0.75rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* SECTION */
+  .section { padding: 64px 32px; max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 40px;
+    line-height: 1.15;
+  }
+
+  /* CARDS */
+  .card-custom {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    height: 100%;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .card-custom:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+  .card-icon {
+    width: 48px; height: 48px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+  .card-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; color: var(--text); }
+  .card-text { color: var(--text2); font-size: 0.9rem; line-height: 1.6; }
+
+  /* HOW IT WORKS */
+  .step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .step-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    min-width: 48px;
+  }
+  .step h5 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+  .step p { color: var(--text2); font-size: 0.9rem; margin: 0; }
+
+  /* ITEM LISTING (mock) */
+  .item-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s;
+  }
+  .item-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  .item-icon {
+    width: 52px; height: 52px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .item-icon.lost { background: #fde8df; }
+  .item-icon.found { background: #dff0e0; }
+  .item-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+  }
+  .item-badge.lost { background: #fde8df; color: #c94f22; }
+  .item-badge.found { background: #dff0e0; color: #1d8a30; }
+  .item-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.98rem; color: var(--text); margin-bottom: 2px; }
+  .item-meta { color: var(--text2); font-size: 0.82rem; }
+
+  /* FORMS */
+  .form-screen {
+    min-height: 100vh;
+    background: var(--bg2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  .form-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 580px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+  }
+  .form-box.wide { max-width: 800px; }
+  .form-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .form-sub { color: var(--text2); font-size: 0.9rem; margin-bottom: 28px; }
+  .form-label { font-weight: 500; font-size: 0.85rem; color: var(--text); margin-bottom: 4px; }
+  .form-control, .form-select {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: border-color 0.2s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(224,92,42,0.12);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .form-control.is-invalid { border-color: #dc3545; }
+  .form-control.is-valid { border-color: #198754; }
+  .invalid-feedback { color: #dc3545; font-size: 0.78rem; margin-top: 3px; display: none; }
+  .invalid-feedback.show { display: block; }
+  .btn-submit {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    width: 100%;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-family: 'Nunito', sans-serif;
+    margin-top: 8px;
+  }
+  .btn-submit:hover { background: #c94f22; transform: translateY(-1px); }
+  .btn-clear {
+    background: var(--bg2);
+    color: var(--text2);
+    border: 1.5px solid var(--border);
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .btn-clear:hover { background: var(--border); }
+  .form-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .form-link { color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 0.88rem; }
+  .section-divider {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 20px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* TOAST */
+  #toast-container {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast-msg {
+    background: var(--toast-bg);
+    color: var(--toast-text);
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideUp 0.3s ease;
+    max-width: 320px;
+  }
+  .toast-msg.success { border-left: 4px solid #22c55e; }
+  .toast-msg.error { border-left: 4px solid #ef4444; }
+  .toast-msg.info { border-left: 4px solid var(--accent2); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ERROR SCREEN */
+  .error-screen {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+  }
+  .error-code {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 6rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .error-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 12px; }
+  .error-text { color: var(--text2); max-width: 380px; margin: 0 auto 28px; }
+
+  /* FOOTER */
+  footer {
+    background: var(--nav-bg);
+    color: #aaa;
+    text-align: center;
+    padding: 28px;
+    font-size: 0.82rem;
+    border-top: 3px solid var(--accent);
+    margin-top: 40px;
+  }
+  footer span { color: var(--accent); }
+
+  /* RANGE CUSTOM */
+  input[type="range"] { accent-color: var(--accent); width: 100%; }
+  input[type="radio"] { accent-color: var(--accent); }
+
+  /* RESULT TABLE */
+  .result-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .result-box h4 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; margin-bottom: 20px; color: var(--text); }
+  .result-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { color: var(--text2); font-weight: 500; }
+  .result-value { color: var(--text); font-weight: 600; text-align: right; max-width: 60%; }
+
+  /* MOBILE NAV */
+  #mobile-nav { display: none; flex-direction: column; background: #111; padding: 16px; gap: 4px; }
+  #mobile-nav a, #mobile-nav button { display: block; color: #f0ece0; text-decoration: none; padding: 10px 16px; border-radius: 8px; background: none; border: none; text-align: left; font-family: 'Nunito', sans-serif; font-size: 0.9rem; cursor: pointer; width: 100%; }
+  #mobile-nav a:hover, #mobile-nav button:hover { background: rgba(255,255,255,0.08); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .hamburger { display: block; }
+    #mobile-nav.open { display: flex; }
+    .form-box { padding: 24px; }
+    .section { padding: 40px 16px; }
+    .stats-bar { gap: 24px; }
+    nav { padding: 14px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ACCESSIBILITY BAR -->
+<div id="access-bar">
+  <span>Acessibilidade</span>
+  <button onclick="toggleContrast()">🌗 Contraste</button>
+  <button onclick="changeFontSize(-1)">A-</button>
+  <button onclick="changeFontSize(1)">A+</button>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="nav-logo" href="#" onclick="showScreen('home')">Achados<span>RJ</span></a>
+  <div class="nav-links" id="nav-links">
+    <div class="dropdown">
+      <a href="#" onclick="showScreen('home'); return false;">Início</a>
+      <div class="dropdown-menu-custom">
+        <a href="#" onclick="scrollToSection('servicos'); return false;">Serviços</a>
+        <a href="#" onclick="scrollToSection('como-funciona'); return false;">Como Funciona</a>
+        <a href="#" onclick="scrollToSection('itens-recentes'); return false;">Itens Recentes</a>
+        <a href="#" onclick="scrollToSection('contato'); return false;">Contato</a>
+      </div>
+    </div>
+    <a href="#" onclick="scrollToSection('itens-recentes'); return false;">Achados</a>
+    <a href="#" onclick="scrollToSection('como-funciona'); return false;">Como Funciona</a>
+    <span id="user-display"></span>
+    <button class="nav-btn" id="nav-logout" style="display:none" onclick="doLogout()">Sair</button>
+    <button class="nav-btn btn-accent" id="nav-login-btn" onclick="showScreen('login')">Entrar</button>
+    <button class="nav-btn" id="nav-register-btn" onclick="showScreen('cadastro')">Cadastrar</button>
+  </div>
+  <button class="hamburger" onclick="toggleMobileNav()">☰</button>
+</nav>
+<div id="mobile-nav">
+  <a href="#" onclick="showScreen('home'); toggleMobileNav()">Início</a>
+  <a href="#" onclick="scrollToSection('servicos'); toggleMobileNav()">Serviços</a>
+  <a href="#" onclick="scrollToSection('como-funciona'); toggleMobileNav()">Como Funciona</a>
+  <a href="#" onclick="scrollToSection('itens-recentes'); toggleMobileNav()">Itens Recentes</a>
+  <button id="mob-login-btn" onclick="showScreen('login'); toggleMobileNav()">Entrar</button>
+  <button id="mob-register-btn" onclick="showScreen('cadastro'); toggleMobileNav()">Cadastrar</button>
+  <button id="mob-logout-btn" style="display:none" onclick="doLogout(); toggleMobileNav()">Sair</button>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- ===================== SCREEN: HOME ===================== -->
+<div id="screen-home" class="screen active">
+
+  <!-- HERO -->
+  <div id="hero">
+    <div class="hero-tag">📍 Rio de Janeiro</div>
+    <h1 class="hero-title">Perdeu algo?<br>A cidade <span>te ajuda</span>.</h1>
+    <p class="hero-sub">A plataforma carioca de achados e perdidos. Registre, busque e recupere seus pertences com a ajuda da comunidade.</p>
+    <div class="hero-btns">
+      <button class="btn-primary-custom" onclick="showScreen('cadastro')">+ Registrar Item</button>
+      <button class="btn-outline-custom" onclick="scrollToSection('itens-recentes')">🔍 Ver Achados</button>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">1.284</div><div class="stat-label">Itens Registrados</div></div>
+    <div class="stat-item"><div class="stat-num">847</div><div class="stat-label">Itens Devolvidos</div></div>
+    <div class="stat-item"><div class="stat-num">66%</div><div class="stat-label">Taxa de Sucesso</div></div>
+    <div class="stat-item"><div class="stat-num">18</div><div class="stat-label">Bairros Cobertos</div></div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="section" id="servicos">
+    <div class="section-label">O que oferecemos</div>
+    <div class="section-title">Nossos Serviços</div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="card-custom">
+          <div class="card-icon">⚠️</div>
+          <div class="card-title">Registrar Perda</div>
+          <div class="card-text">Informe o que perdeu, onde e quando. Nossa rede de usuários te ajuda a localizar.</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card-custom">
+          <div class="card-icon" style="background:var(--accent2)">🤝</div>
+          <div class="card-title">Registrar Achado</div>
+          <div class="card-text">Encontrou algo? Cadastre e conecte o item ao seu dono legítimo com segurança.</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card-custom">
+          <div class="card-icon" style="background:#1d8a30">🔍</div>
+          <div class="card-title">Busca Avançada</div>
+          <div class="card-text">Filtre por categoria, bairro, data e tipo de item para encontrar o que procura.</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card-custom">
+          <div class="card-icon" style="background:#7c3aed">🔔</div>
+          <div class="card-title">Alertas</div>
+          <div class="card-text">Receba notificações quando um item compatível com sua busca for registrado.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div style="background: var(--bg2); padding: 60px 0;" id="como-funciona">
+    <div class="section" style="padding-top:0; padding-bottom:0">
+      <div class="section-label">Passo a passo</div>
+      <div class="section-title">Como Funciona</div>
+      <div class="row g-0">
+        <div class="col-md-6 col-lg-3 pe-md-3 mb-3">
+          <div class="step flex-column">
+            <div class="step-num">01</div>
+            <div>
+              <h5>Crie sua conta</h5>
+              <p>Cadastre-se gratuitamente com seus dados. Rápido e seguro.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 pe-md-3 mb-3">
+          <div class="step flex-column">
+            <div class="step-num">02</div>
+            <div>
+              <h5>Registre o item</h5>
+              <p>Descreva o item perdido ou encontrado com o máximo de detalhes.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 pe-md-3 mb-3">
+          <div class="step flex-column">
+            <div class="step-num">03</div>
+            <div>
+              <h5>Aguarde contato</h5>
+              <p>Nossa plataforma conecta automaticamente perdas com achados similares.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+          <div class="step flex-column">
+            <div class="step-num">04</div>
+            <div>
+              <h5>Recupere seu bem</h5>
+              <p>Combine a entrega em local seguro e encerre o registro com sucesso!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ITEMS -->
+  <div class="section" id="itens-recentes">
+    <div class="section-label">Publicados recentemente</div>
+    <div class="section-title">Itens Recentes</div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="item-card">
+          <div class="item-icon lost">👜</div>
+          <div>
+            <div class="item-badge lost">Perdido</div>
+            <div class="item-name">Bolsa preta de couro</div>
+            <div class="item-meta">📍 Méier &nbsp;·&nbsp; 📅 01/05/2026</div>
+          </div>
+        </div>
+        <div class="item-card">
+          <div class="item-icon lost">🔑</div>
+          <div>
+            <div class="item-badge lost">Perdido</div>
+            <div class="item-name">Chaveiro com 3 chaves e pingente azul</div>
+            <div class="item-meta">📍 Tijuca &nbsp;·&nbsp; 📅 30/04/2026</div>
+          </div>
+        </div>
+        <div class="item-card">
+          <div class="item-icon lost">📱</div>
+          <div>
+            <div class="item-badge lost">Perdido</div>
+            <div class="item-name">Celular Samsung Galaxy – case vermelha</div>
+            <div class="item-meta">📍 Centro &nbsp;·&nbsp; 📅 02/05/2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="item-card">
+          <div class="item-icon found">💳</div>
+          <div>
+            <div class="item-badge found">Encontrado</div>
+            <div class="item-name">Carteira com documentos (RG e CPF)</div>
+            <div class="item-meta">📍 Bonsucesso &nbsp;·&nbsp; 📅 02/05/2026</div>
+          </div>
+        </div>
+        <div class="item-card">
+          <div class="item-icon found">🐕</div>
+          <div>
+            <div class="item-badge found">Encontrado</div>
+            <div class="item-name">Cachorro pequeno, pelo bege, sem coleira</div>
+            <div class="item-meta">📍 Ramos &nbsp;·&nbsp; 📅 03/05/2026</div>
+          </div>
+        </div>
+        <div class="item-card">
+          <div class="item-icon found">🎒</div>
+          <div>
+            <div class="item-badge found">Encontrado</div>
+            <div class="item-name">Mochila escolar azul com livros</div>
+            <div class="item-meta">📍 Madureira &nbsp;·&nbsp; 📅 01/05/2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div style="background:var(--bg2); padding: 60px 0;" id="contato">
+    <div class="section" style="padding-top:0;padding-bottom:0">
+      <div class="section-label">Fale conosco</div>
+      <div class="section-title">Contato & Suporte</div>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card-custom">
+            <div class="card-icon">✉️</div>
+            <div class="card-title">E-mail</div>
+            <div class="card-text">contato@achadosrj.com.br<br>Resposta em até 24h úteis.</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom">
+            <div class="card-icon" style="background:var(--accent2)">📞</div>
+            <div class="card-title">Telefone</div>
+            <div class="card-text">(+55) 21-98765-4321<br>Seg–Sex, 8h às 18h.</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom">
+            <div class="card-icon" style="background:#1d8a30">📍</div>
+            <div class="card-title">Endereço</div>
+            <div class="card-text">Av. Pastor Martin Luther King Jr., 126 – Bonsucesso, Rio de Janeiro/RJ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER ITEM FORM (inside home, after login) -->
+  <div class="section" id="registro-item-section" style="display:none">
+    <div class="section-label">Área do usuário</div>
+    <div class="section-title">Registrar Item</div>
+    <div class="form-box wide" style="margin:0">
+      <p class="form-sub">Preencha as informações sobre o item perdido ou encontrado.</p>
+
+      <div class="mb-3">
+        <label class="form-label">Tipo de Registro *</label><br>
+        <div class="d-flex gap-4">
+          <label><input type="radio" name="tipo-item" value="perdido" checked> Perdi um item</label>
+          <label><input type="radio" name="tipo-item" value="encontrado"> Encontrei um item</label>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Categoria *</label>
+        <select class="form-select" id="reg-categoria">
+          <option value="">Selecione...</option>
+          <option>Documentos (RG, CPF, CNH)</option>
+          <option>Eletrônicos (celular, tablet, notebook)</option>
+          <option>Bolsas e carteiras</option>
+          <option>Chaves</option>
+          <option>Animais de estimação</option>
+          <option>Roupas e acessórios</option>
+          <option>Outros</option>
+        </select>
+        <div class="invalid-feedback" id="err-categoria">Selecione uma categoria.</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Descrição do item *</label>
+        <textarea class="form-control" id="reg-descricao" rows="3" placeholder="Descreva o item com o máximo de detalhes..."></textarea>
+        <div class="invalid-feedback" id="err-descricao">Descreva o item.</div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Bairro *</label>
+          <input type="text" class="form-control" id="reg-bairro" placeholder="Ex: Méier">
+          <div class="invalid-feedback" id="err-bairro">Informe o bairro.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Data *</label>
+          <input type="date" class="form-control" id="reg-data">
+          <div class="invalid-feedback" id="err-data">Informe a data.</div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">Nível de urgência: <strong id="urgencia-val">5</strong>/10</label>
+        <input type="range" min="1" max="10" value="5" id="reg-urgencia" oninput="document.getElementById('urgencia-val').textContent=this.value">
+      </div>
+
+      <button class="btn-submit" onclick="submitRegistro()">Enviar Registro</button>
+      <button class="btn-clear" onclick="clearRegistro()">Limpar</button>
+    </div>
+  </div>
+
+</div><!-- end screen-home -->
+
+<!-- ===================== SCREEN: CADASTRO ===================== -->
+<div id="screen-cadastro" class="screen">
+  <div class="form-screen">
+    <div class="form-box wide">
+      <div class="form-title">Criar Conta</div>
+      <div class="form-sub">Junte-se à comunidade AchadosRJ. É gratuito!</div>
+
+      <div class="section-divider">Dados Pessoais</div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Nome Completo * <small style="color:var(--text2)">(15–80 caracteres)</small></label>
+          <input type="text" class="form-control" id="c-nome" placeholder="Seu nome completo">
+          <div class="invalid-feedback" id="err-nome"></div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Data de Nascimento *</label>
+          <input type="date" class="form-control" id="c-nasc">
+          <div class="invalid-feedback" id="err-nasc">Campo obrigatório.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Sexo *</label>
+          <select class="form-select" id="c-sexo">
+            <option value="">Selecione...</option>
+            <option>Masculino</option>
+            <option>Feminino</option>
+            <option>Prefiro não informar</option>
+          </select>
+          <div class="invalid-feedback" id="err-sexo">Selecione uma opção.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nome da Mãe *</label>
+          <input type="text" class="form-control" id="c-mae" placeholder="Nome completo da mãe">
+          <div class="invalid-feedback" id="err-mae">Campo obrigatório.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">CPF * <small style="color:var(--text2)">(com dígito verificador)</small></label>
+          <input type="text" class="form-control" id="c-cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)">
+          <div class="invalid-feedback" id="err-cpf"></div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">E-mail *</label>
+          <input type="email" class="form-control" id="c-email" placeholder="seu@email.com">
+          <div class="invalid-feedback" id="err-email">E-mail inválido.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Telefone Celular * <small style="color:var(--text2)">(+55)XX-XXXXXXXX</small></label>
+          <input type="text" class="form-control" id="c-cel" placeholder="(+55)21-999999999" maxlength="18" oninput="maskPhone(this)">
+          <div class="invalid-feedback" id="err-cel">Formato: (+55)XX-XXXXXXXX</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Telefone Fixo * <small style="color:var(--text2)">(+55)XX-XXXXXXXX</small></label>
+          <input type="text" class="form-control" id="c-fixo" placeholder="(+55)21-22222222" maxlength="18" oninput="maskPhone(this)">
+          <div class="invalid-feedback" id="err-fixo">Formato: (+55)XX-XXXXXXXX</div>
+        </div>
+      </div>
+
+      <div class="section-divider">Endereço</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">CEP *</label>
+          <input type="text" class="form-control" id="c-cep" placeholder="00000-000" maxlength="9" oninput="maskCEP(this)" onblur="buscarCEP()">
+          <div class="invalid-feedback" id="err-cep">CEP inválido.</div>
+        </div>
+        <div class="col-md-8">
+          <label class="form-label">Logradouro *</label>
+          <input type="text" class="form-control" id="c-rua" placeholder="Rua, Avenida...">
+          <div class="invalid-feedback" id="err-rua">Campo obrigatório.</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Número *</label>
+          <input type="text" class="form-control" id="c-num" placeholder="123">
+          <div class="invalid-feedback" id="err-num">Campo obrigatório.</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Complemento</label>
+          <input type="text" class="form-control" id="c-comp" placeholder="Apto, Bl...">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Bairro *</label>
+          <input type="text" class="form-control" id="c-bairro" placeholder="Bairro">
+          <div class="invalid-feedback" id="err-bairro2">Campo obrigatório.</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Cidade *</label>
+          <input type="text" class="form-control" id="c-cidade" placeholder="Cidade">
+          <div class="invalid-feedback" id="err-cidade">Campo obrigatório.</div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Estado *</label>
+          <select class="form-select" id="c-estado">
+            <option value="">UF</option>
+            <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+            <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+            <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+            <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+            <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+            <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+            <option>SP</option><option>SE</option><option>TO</option>
+          </select>
+          <div class="invalid-feedback" id="err-estado">Campo obrigatório.</div>
+        </div>
+      </div>
+
+      <div class="section-divider">Acesso</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Login * <small style="color:var(--text2)">(exatamente 6 letras)</small></label>
+          <input type="text" class="form-control" id="c-login" placeholder="abcdef" maxlength="6">
+          <div class="invalid-feedback" id="err-login"></div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Senha * <small style="color:var(--text2)">(8 letras)</small></label>
+          <input type="password" class="form-control" id="c-senha" placeholder="••••••••" maxlength="8">
+          <div class="invalid-feedback" id="err-senha"></div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Confirmar Senha *</label>
+          <input type="password" class="form-control" id="c-conf" placeholder="••••••••" maxlength="8">
+          <div class="invalid-feedback" id="err-conf"></div>
+        </div>
+      </div>
+
+      <hr class="form-divider">
+      <button class="btn-submit" onclick="submitCadastro()">Criar Conta</button>
+      <button class="btn-clear" onclick="clearCadastro()">Limpar</button>
+      <p style="text-align:center;margin-top:16px;font-size:0.88rem;color:var(--text2)">
+        Já tem conta? <span class="form-link" onclick="showScreen('login')">Fazer login</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: LOGIN ===================== -->
+<div id="screen-login" class="screen">
+  <div class="form-screen">
+    <div class="form-box">
+      <div class="form-title">Entrar</div>
+      <div class="form-sub">Acesse sua conta para registrar itens e receber alertas.</div>
+      <div class="mb-3">
+        <label class="form-label">Login *</label>
+        <input type="text" class="form-control" id="l-login" placeholder="Seu login (6 letras)" maxlength="6">
+        <div class="invalid-feedback" id="err-l-login">Campo obrigatório.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Senha *</label>
+        <input type="password" class="form-control" id="l-senha" placeholder="••••••••" maxlength="8">
+        <div class="invalid-feedback" id="err-l-senha">Campo obrigatório.</div>
+      </div>
+      <hr class="form-divider">
+      <button class="btn-submit" onclick="submitLogin()">Entrar</button>
+      <button class="btn-clear" onclick="clearLogin()">Limpar</button>
+      <p style="text-align:center;margin-top:16px;font-size:0.88rem;color:var(--text2)">
+        Novo por aqui? <span class="form-link" onclick="showScreen('cadastro')">Criar conta grátis</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: RESULT ===================== -->
+<div id="screen-resultado" class="screen">
+  <div style="padding:60px 16px; background:var(--bg);">
+    <div class="result-box" id="resultado-content"></div>
+    <div style="text-align:center;margin-top:24px">
+      <button class="btn-primary-custom" onclick="showScreen('home')">← Voltar ao Início</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: ERROR ===================== -->
+<div id="screen-erro" class="screen">
+  <div class="error-screen">
+    <div>
+      <div class="error-code" id="err-code">!</div>
+      <div class="error-title" id="err-title">Algo deu errado</div>
+      <p class="error-text" id="err-msg">Verifique os dados informados e tente novamente.</p>
+      <button class="btn-primary-custom" onclick="showScreen('login')">Tentar novamente</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong style="font-family:'Syne',sans-serif;font-size:1rem">Achados<span>RJ</span></strong><br>
+  <span style="color:var(--text2);font-size:0.78rem">Plataforma comunitária de achados e perdidos urbanos · Rio de Janeiro · 2026</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ========================
+// NAVIGATION
+// ========================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function scrollToSection(id) {
+  showScreen('home');
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 100);
+}
+
+function toggleMobileNav() {
+  document.getElementById('mobile-nav').classList.toggle('open');
+}
+
+// ========================
+// ACCESSIBILITY
+// ========================
+let fontSize = 16;
+function changeFontSize(delta) {
+  fontSize = Math.max(12, Math.min(22, fontSize + delta));
+  document.documentElement.style.setProperty('--font-size-base', fontSize + 'px');
+  document.documentElement.style.fontSize = fontSize + 'px';
+}
+
+function toggleContrast() {
+  document.body.classList.toggle('dark-mode');
+}
+
+// ========================
+// TOAST
+// ========================
+function showToast(msg, type = 'info') {
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+  const t = document.createElement('div');
+  t.className = 'toast-msg ' + type;
+  t.innerHTML = `<i class="fa ${icons[type]}"></i> ${msg}`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ========================
+// AUTH
+// ========================
+function updateNavAuth() {
+  const login = localStorage.getItem('loggedUser');
+  const ud = document.getElementById('user-display');
+  const logBtn = document.getElementById('nav-login-btn');
+  const regBtn = document.getElementById('nav-register-btn');
+  const logoutBtn = document.getElementById('nav-logout');
+  const mobLogin = document.getElementById('mob-login-btn');
+  const mobReg = document.getElementById('mob-register-btn');
+  const mobLogout = document.getElementById('mob-logout-btn');
+  const regSection = document.getElementById('registro-item-section');
+
+  if (login) {
+    ud.textContent = '👤 ' + login;
+    logBtn.style.display = 'none';
+    regBtn.style.display = 'none';
+    logoutBtn.style.display = '';
+    mobLogin.style.display = 'none';
+    mobReg.style.display = 'none';
+    mobLogout.style.display = '';
+    if (regSection) regSection.style.display = '';
+  } else {
+    ud.textContent = '';
+    logBtn.style.display = '';
+    regBtn.style.display = '';
+    logoutBtn.style.display = 'none';
+    mobLogin.style.display = '';
+    mobReg.style.display = '';
+    mobLogout.style.display = 'none';
+    if (regSection) regSection.style.display = 'none';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('loggedUser');
+  updateNavAuth();
+  showScreen('home');
+  showToast('Você saiu da sua conta.', 'info');
+}
+
+updateNavAuth();
+
+// ========================
+// MASKS
+// ========================
+function maskCPF(el) {
+  let v = el.value.replace(/\D/g, '').substring(0, 11);
+  if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+  else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+  else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+  el.value = v;
+}
+
+function maskPhone(el) {
+  let v = el.value.replace(/[^\d+\-()]/g, '');
+  el.value = v;
+}
+
+function maskCEP(el) {
+  let v = el.value.replace(/\D/g, '').substring(0, 8);
+  if (v.length > 5) v = v.replace(/(\d{5})(\d{1,3})/, '$1-$2');
+  el.value = v;
+}
+
+async function buscarCEP() {
+  const cep = document.getElementById('c-cep').value.replace(/\D/g, '');
+  if (cep.length !== 8) return;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d = await r.json();
+    if (!d.erro) {
+      document.getElementById('c-rua').value = d.logradouro || '';
+      document.getElementById('c-bairro').value = d.bairro || '';
+      document.getElementById('c-cidade').value = d.localidade || '';
+      const sel = document.getElementById('c-estado');
+      for (let o of sel.options) { if (o.value === d.uf) { sel.value = d.uf; break; } }
+      showToast('Endereço preenchido automaticamente!', 'success');
+    } else {
+      showToast('CEP não encontrado. Preencha manualmente.', 'info');
+    }
+  } catch (e) {
+    showToast('Sem conexão. Preencha o endereço manualmente.', 'info');
+  }
+}
+
+// ========================
+// CPF VALIDATOR
+// ========================
+function validarCPF(cpf) {
+  cpf = cpf.replace(/\D/g, '');
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += parseInt(cpf[i]) * (10 - i);
+  let r = (s * 10) % 11;
+  if (r === 10 || r === 11) r = 0;
+  if (r !== parseInt(cpf[9])) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += parseInt(cpf[i]) * (11 - i);
+  r = (s * 10) % 11;
+  if (r === 10 || r === 11) r = 0;
+  return r === parseInt(cpf[10]);
+}
+
+// ========================
+// FIELD HELPERS
+// ========================
+function setErr(id, msg) {
+  const el = document.getElementById(id);
+  el.classList.add('is-invalid');
+  const fb = document.getElementById('err-' + id.replace('c-','').replace('l-',''));
+  if (fb) { fb.textContent = msg; fb.classList.add('show'); }
+}
+function clearErr(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('is-invalid'); el.classList.add('is-valid'); }
+  const idKey = id.replace('c-','').replace('l-','');
+  const fb = document.getElementById('err-' + idKey);
+  if (fb) fb.classList.remove('show');
+}
+function resetField(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('is-invalid','is-valid'); el.value = ''; }
+  const idKey = id.replace('c-','').replace('l-','');
+  const fb = document.getElementById('err-' + idKey);
+  if (fb) fb.classList.remove('show');
+}
+
+// ========================
+// CADASTRO
+// ========================
+function submitCadastro() {
+  let ok = true;
+
+  // Nome
+  const nome = document.getElementById('c-nome').value.trim();
+  if (!/^[a-zA-ZÀ-ÿ\s]{15,80}$/.test(nome)) {
+    setErr('c-nome', 'Nome deve ter entre 15 e 80 caracteres alfabéticos.'); ok = false;
+  } else clearErr('c-nome');
+
+  // Nascimento
+  const nasc = document.getElementById('c-nasc').value;
+  if (!nasc) { setErr('c-nasc', 'Campo obrigatório.'); ok = false; } else clearErr('c-nasc');
+
+  // Sexo
+  const sexo = document.getElementById('c-sexo').value;
+  if (!sexo) { setErr('c-sexo', 'Selecione uma opção.'); ok = false; } else clearErr('c-sexo');
+
+  // Mãe
+  const mae = document.getElementById('c-mae').value.trim();
+  if (!mae) { setErr('c-mae', 'Campo obrigatório.'); ok = false; } else clearErr('c-mae');
+
+  // CPF
+  const cpf = document.getElementById('c-cpf').value;
+  if (!validarCPF(cpf)) { setErr('c-cpf', 'CPF inválido.'); ok = false; } else clearErr('c-cpf');
+
+  // Email
+  const email = document.getElementById('c-email').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('c-email', 'E-mail inválido.'); ok = false; } else clearErr('c-email');
+
+  // Telefones
+  const phoneRe = /^\(\+55\)\d{2}-\d{8,9}$/;
+  const cel = document.getElementById('c-cel').value.trim();
+  if (!phoneRe.test(cel)) { setErr('c-cel', 'Formato: (+55)21-999999999'); ok = false; } else clearErr('c-cel');
+  const fixo = document.getElementById('c-fixo').value.trim();
+  if (!phoneRe.test(fixo)) { setErr('c-fixo', 'Formato: (+55)21-22222222'); ok = false; } else clearErr('c-fixo');
+
+  // Endereço
+  const cep = document.getElementById('c-cep').value.replace(/\D/g,'');
+  if (cep.length !== 8) { setErr('c-cep', 'CEP inválido.'); ok = false; } else clearErr('c-cep');
+  ['c-rua','c-num','c-bairro','c-cidade'].forEach(id => {
+    const v = document.getElementById(id).value.trim();
+    if (!v) { setErr(id, 'Campo obrigatório.'); ok = false; } else clearErr(id);
+  });
+  if (!document.getElementById('c-estado').value) { setErr('c-estado', 'Selecione o estado.'); ok = false; } else clearErr('c-estado');
+
+  // Login
+  const login = document.getElementById('c-login').value.trim();
+  if (!/^[a-zA-Z]{6}$/.test(login)) { setErr('c-login', 'Login deve ter exatamente 6 letras.'); ok = false; } else clearErr('c-login');
+
+  // Senha
+  const senha = document.getElementById('c-senha').value;
+  if (!/^[a-zA-Z]{8}$/.test(senha)) { setErr('c-senha', 'Senha deve ter exatamente 8 letras.'); ok = false; } else clearErr('c-senha');
+
+  // Confirmar senha
+  const conf = document.getElementById('c-conf').value;
+  if (conf !== senha) { setErr('c-conf', 'Senhas não coincidem.'); ok = false; } else clearErr('c-conf');
+
+  if (!ok) { showToast('Corrija os campos em vermelho.', 'error'); return; }
+
+  // Save to localStorage
+  localStorage.setItem('user_' + login, JSON.stringify({ nome, login, senha }));
+  showToast('Conta criada com sucesso! Faça login.', 'success');
+  clearCadastro();
+  setTimeout(() => showScreen('login'), 1200);
+}
+
+function clearCadastro() {
+  ['c-nome','c-nasc','c-sexo','c-mae','c-cpf','c-email','c-cel','c-fixo',
+   'c-cep','c-rua','c-num','c-comp','c-bairro','c-cidade','c-estado',
+   'c-login','c-senha','c-conf'].forEach(resetField);
+}
+
+// ========================
+// LOGIN
+// ========================
+function submitLogin() {
+  let ok = true;
+  const login = document.getElementById('l-login').value.trim();
+  const senha = document.getElementById('l-senha').value;
+
+  if (!login) { setErr('l-login', 'Campo obrigatório.'); ok = false; } else clearErr('l-login');
+  if (!senha) { setErr('l-senha', 'Campo obrigatório.'); ok = false; } else clearErr('l-senha');
+  if (!ok) return;
+
+  const stored = localStorage.getItem('user_' + login);
+  if (!stored) {
+    showErrorScreen('Usuário não encontrado', 'O login informado não está cadastrado. Verifique ou crie uma nova conta.');
+    return;
+  }
+  const user = JSON.parse(stored);
+  if (user.senha !== senha) {
+    showErrorScreen('Senha incorreta', 'A senha informada não corresponde ao login. Tente novamente.');
+    return;
+  }
+
+  localStorage.setItem('loggedUser', login);
+  updateNavAuth();
+  showToast('Bem-vindo(a), ' + login + '!', 'success');
+  showScreen('home');
+}
+
+function clearLogin() {
+  ['l-login','l-senha'].forEach(resetField);
+}
+
+// ========================
+// ERROR SCREEN
+// ========================
+function showErrorScreen(title, msg) {
+  document.getElementById('err-code').textContent = '✕';
+  document.getElementById('err-title').textContent = title;
+  document.getElementById('err-msg').textContent = msg;
+  showScreen('erro');
+}
+
+// ========================
+// REGISTRO DE ITEM
+// ========================
+function submitRegistro() {
+  let ok = true;
+  const cat = document.getElementById('reg-categoria').value;
+  const desc = document.getElementById('reg-descricao').value.trim();
+  const bairro = document.getElementById('reg-bairro').value.trim();
+  const data = document.getElementById('reg-data').value;
+
+  if (!cat) { document.getElementById('reg-categoria').classList.add('is-invalid'); document.getElementById('err-categoria').classList.add('show'); ok=false; }
+  else { document.getElementById('reg-categoria').classList.remove('is-invalid'); document.getElementById('err-categoria').classList.remove('show'); }
+
+  if (!desc) { document.getElementById('reg-descricao').classList.add('is-invalid'); document.getElementById('err-descricao').classList.add('show'); ok=false; }
+  else { document.getElementById('reg-descricao').classList.remove('is-invalid'); document.getElementById('err-descricao').classList.remove('show'); }
+
+  if (!bairro) { document.getElementById('reg-bairro').classList.add('is-invalid'); document.getElementById('err-bairro').classList.add('show'); ok=false; }
+  else { document.getElementById('reg-bairro').classList.remove('is-invalid'); document.getElementById('err-bairro').classList.remove('show'); }
+
+  if (!data) { document.getElementById('reg-data').classList.add('is-invalid'); document.getElementById('err-data').classList.add('show'); ok=false; }
+  else { document.getElementById('reg-data').classList.remove('is-invalid'); document.getElementById('err-data').classList.remove('show'); }
+
+  if (!ok) { showToast('Preencha todos os campos obrigatórios.', 'error'); return; }
+
+  const tipo = document.querySelector('input[name="tipo-item"]:checked').value;
+  const urgencia = document.getElementById('reg-urgencia').value;
+
+  // Show result
+  const r = document.getElementById('resultado-content');
+  r.innerHTML = `
+    <h4>✅ Item Registrado com Sucesso!</h4>
+    <div class="result-row"><span class="result-label">Tipo</span><span class="result-value">${tipo === 'perdido' ? '🔴 Perdi um item' : '🟢 Encontrei um item'}</span></div>
+    <div class="result-row"><span class="result-label">Categoria</span><span class="result-value">${cat}</span></div>
+    <div class="result-row"><span class="result-label">Descrição</span><span class="result-value">${desc}</span></div>
+    <div class="result-row"><span class="result-label">Bairro</span><span class="result-value">${bairro}</span></div>
+    <div class="result-row"><span class="result-label">Data</span><span class="result-value">${data}</span></div>
+    <div class="result-row"><span class="result-label">Urgência</span><span class="result-value">${urgencia}/10</span></div>
+    <div class="result-row"><span class="result-label">Registrado por</span><span class="result-value">${localStorage.getItem('loggedUser')}</span></div>
+    <p style="color:var(--text2);font-size:0.82rem;margin-top:16px">Seu registro foi publicado. Você será notificado quando encontrarmos uma correspondência.</p>
+  `;
+  showScreen('resultado');
+  showToast('Registro enviado!', 'success');
+}
+
+function clearRegistro() {
+  document.getElementById('reg-categoria').value = '';
+  document.getElementById('reg-descricao').value = '';
+  document.getElementById('reg-bairro').value = '';
+  document.getElementById('reg-data').value = '';
+  document.getElementById('reg-urgencia').value = 5;
+  document.getElementById('urgencia-val').textContent = '5';
+}
+</script>
+</body>
+</html>
